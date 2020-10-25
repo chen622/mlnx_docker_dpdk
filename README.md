@@ -4,7 +4,9 @@ Run:
 docker build --build-arg OS_VER=7.7.1908 --build-arg  DPDK_VER=20.02 -t centos/<image_name>:<version_name> .
 
 OS_VER - Is CentOS image version
+
 DPDK_VER - Is DPDK versrion
+
 <image_name> and <version_name> can be any user-defined name
 
 The user gets the option to determine which DPDK version to use by specifying DPDK_VER=<version_number>
