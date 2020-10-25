@@ -7,7 +7,7 @@ OS_VER - Is CentOS image version
 
 DPDK_VER - Is DPDK versrion
 
-<image_name> and <version_name> can be any user-defined name
+<image_name> and <version_name> can be any user defined name
 
 The user gets the option to determine which DPDK version to use by specifying DPDK_VER=<version_number>
 Please refer to the DPDK release notes to know which versions are supported on which OS.
