@@ -1,5 +1,6 @@
-ARG OS_VER=${OS_VER} 
+ARG OS_VER=${OS_VER}
 ARG DPDK_VER=${DPDK_VER}
+ARG OFED_VER=${OFED_VER}
 FROM centos:${OS_VER}
 MAINTAINER Amir Zeidner
 
@@ -17,6 +18,14 @@ gcc \
 ethtool \
 net-tools \
 rdma-core-devel
+
+# Install MOFED - If no MOFED version supplied install from upstream 
+ARG OFED_VER
+ARG OS_VER
+RUN if [ "$OFED_VER" != "" ] ; then  cd /etc/yum.repos.d && wget https://linux.mellanox.com/public/repo/mlnx_ofed/${OFED_VER}/rhel${OS_VER:0:3}/mellanox_mlnx_ofed.repo ; fi
+RUN yum install -y \
+rdma-core-devel \
+libibverbs-utils 
 
 # Download and compile DPDK
 ARG DPDK_VER
