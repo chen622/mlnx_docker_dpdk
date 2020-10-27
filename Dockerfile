@@ -16,8 +16,7 @@ wget \
 make \
 gcc \
 ethtool \
-net-tools \
-rdma-core-devel
+net-tools 
 
 # Install MOFED - If no MOFED version supplied install from upstream 
 ARG OFED_VER
