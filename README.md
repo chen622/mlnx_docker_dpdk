@@ -20,4 +20,4 @@ Building Docker image - For example run:
 
 > Note: Please refer to DPDK release note to validate which DPDK version is supported in a combination of which OS.
 
-> Note: OS version: ubuntu18.04, ubuntu14.04 , ubuntu16.04 , rhel7.2 , rhel7.3 can be used with different Dockerfile which is available in this git project under unique branch.
+> Note: OS versions: ubuntu18.04, ubuntu14.04 , ubuntu16.04 , rhel7.2 , rhel7.3 can be used with different Dockerfile which is available in this git project under unique branch.
