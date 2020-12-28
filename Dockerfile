@@ -13,10 +13,16 @@ numactl-devel \
 numactl \
 unzip \
 wget \
-make \
 gcc \
 ethtool \
-net-tools 
+net-tools \
+python36 \
+epel-release 
+
+RUN easy_install-3.6 pip && pip3 install meson
+
+RUN yum install -y \
+ninja-build 
 
 # Install MOFED - If no MOFED version supplied install from upstream 
 ARG OFED_VER
@@ -29,9 +35,10 @@ libibverbs-utils
 # Download and compile DPDK
 ARG DPDK_VER
 RUN cd /usr/src/ &&  wget http://dpdk.org/browse/dpdk/snapshot/dpdk-${DPDK_VER}.zip && unzip dpdk-${DPDK_VER}.zip 
-ENV DPDK_DIR=/usr/src/dpdk-${DPDK_VER}  DPDK_TARGET=x86_64-native-linuxapp-gcc DPDK_BUILD=$DPDK_DIR/$DPDK_TARGET
-RUN cd $DPDK_DIR && sed -i 's/\(CONFIG_RTE_LIBRTE_MLX5_PMD=\)n/\1y/g' $DPDK_DIR/config/common_base
-RUN cd $DPDK_DIR && make install T=$DPDK_TARGET DESTDIR=install
+ENV DPDK_DIR=/usr/src/dpdk-${DPDK_VER}
+RUN cd $DPDK_DIR && meson build
+RUN cd $DPDK_DIR/build && ninja
+RUN cd $DPDK_DIR/build && ninja install
 
 # Remove unnecessary packages and files
-RUN rm -rf /tmp/* && rm /usr/src/dpdk-${DPDK_VER}.zip
+RUN rm -rf /tmp/* && rm /usr/src/dpdk-${DPDK_VER}.zip && yum clean all
