@@ -8,7 +8,6 @@ WORKDIR /
 
 # Install prerequisite packages
 RUN yum update -y &&  yum install -y \
-libnl \
 numactl-devel \
 numactl \
 unzip \
@@ -17,7 +16,11 @@ gcc \
 ethtool \
 net-tools \
 python36 \
-epel-release 
+epel-release \
+dnf-plugins-core \
+platform-python-setuptools.noarch
+
+RUN yum config-manager --set-enabled powertools ; exit 0
 
 RUN easy_install-3.6 pip && pip3 install meson
 
