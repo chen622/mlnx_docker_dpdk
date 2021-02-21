@@ -17,8 +17,7 @@ ethtool \
 net-tools \
 python36 \
 epel-release \
-dnf-plugins-core \
-platform-python-setuptools.noarch
+dnf-plugins-core 
 
 RUN yum config-manager --set-enabled powertools ; exit 0
 
