@@ -1,37 +1,66 @@
 ARG OS_VER=${OS_VER}
+FROM centos:${OS_VER}
+ARG OS_VER
 ARG DPDK_VER=${DPDK_VER}
 ARG OFED_VER=${OFED_VER}
-FROM centos:${OS_VER}
-MAINTAINER Amir Zeidner
+ARG DOWNLOAD_DIR=/opt/
+ARG KERNEL_URL=${KERNEL_URL}
+ARG KERNEL_DEVEL_URL=${KERNEL_DEVEL_URL}
+MAINTAINER Chenming C ccm@ccm.ink
 
 WORKDIR /
 
+RUN mkdir -p ${DOWNLOAD_DIR}
+
+RUN sed -e 's|^mirrorlist=|#mirrorlist=|g' \
+             -e 's|^#baseurl=http://mirror.centos.org|baseurl=https://mirrors.tuna.tsinghua.edu.cn|g' \
+             -i.bak \
+             /etc/yum.repos.d/CentOS-*.repo
+
 # Install prerequisite packages
-RUN yum update -y &&  yum install -y \
+RUN yum makecache && yum install -y \
 libnl \
 numactl-devel \
 numactl \
 unzip \
-wget \
 make \
 gcc \
 ethtool \
-net-tools 
+net-tools \
+perl \
+wget \
+pciutils-libs \
+pciutils \
+gcc-gfortran \
+tcsh libusbx \
+lsof \
+libnl3 \
+tcl  \
+libmnl  \
+fuse-libs  \
+tk \
+python3 \
+which \
+sysvinit-tools \
+python-devel \
+redhat-rpm-config \
+rpm-build \
+libtool \
+createrepo \
+ca-certificates
 
-# Install MOFED - If no MOFED version supplied install from upstream 
-ARG OFED_VER
-ARG OS_VER
-RUN if [ "$OFED_VER" != "" ] ; then  cd /etc/yum.repos.d && wget https://linux.mellanox.com/public/repo/mlnx_ofed/${OFED_VER}/rhel${OS_VER:0:3}/mellanox_mlnx_ofed.repo ; fi
-RUN yum install -y \
-rdma-core-devel \
-libibverbs-utils 
+RUN if [ "$KERNEL_URL" != "" ] ; then cd ${DOWNLOAD_DIR} && wget -q ${KERNEL_URL} && wget -q ${KERNEL_DEVEL_URL} && yum localinstall -y kernel-*.rpm ; fi
+
+# Install MOFED
+RUN cd $DOWNLOAD_DIR && wget -q https://content.mellanox.com/ofed/MLNX_OFED-${OFED_VER}/MLNX_OFED_LINUX-${OFED_VER}-rhel${OS_VER:0:3}-x86_64.tgz
+
+RUN cd $DOWNLOAD_DIR && tar -xzvf MLNX_OFED_LINUX-${OFED_VER}-rhel${OS_VER:0:3}-x86_64.tgz && cd MLNX_OFED_LINUX-${OFED_VER}-rhel${OS_VER:0:3}-x86_64 && ./mlnxofedinstall --add-kernel-support --without-fw-update --dpdk -q
+
+RUN pip3 install meson ninja pyelftools
 
 # Download and compile DPDK
-ARG DPDK_VER
-RUN cd /usr/src/ &&  wget http://dpdk.org/browse/dpdk/snapshot/dpdk-${DPDK_VER}.zip && unzip dpdk-${DPDK_VER}.zip 
-ENV DPDK_DIR=/usr/src/dpdk-${DPDK_VER}  DPDK_TARGET=x86_64-native-linuxapp-gcc DPDK_BUILD=$DPDK_DIR/$DPDK_TARGET
-RUN cd $DPDK_DIR && sed -i 's/\(CONFIG_RTE_LIBRTE_MLX5_PMD=\)n/\1y/g' $DPDK_DIR/config/common_base
-RUN cd $DPDK_DIR && make install T=$DPDK_TARGET DESTDIR=install
+RUN cd $DOWNLOAD_DIR &&  wget https://fast.dpdk.org/rel/dpdk-${DPDK_VER}.tar.xz && mkdir dpdk-${DPDK_VER} && tar -xvf dpdk-${DPDK_VER}.tar.xz -C dpdk-${DPDK_VER} --strip-components 1
+RUN cd ${DOWNLOAD_DIR}/dpdk-${DPDK_VER} && meson build && cd build && ninja  && ninja install
 
 # Remove unnecessary packages and files
-RUN rm -rf /tmp/* && rm /usr/src/dpdk-${DPDK_VER}.zip
+RUN rm -rf /tmp/*
